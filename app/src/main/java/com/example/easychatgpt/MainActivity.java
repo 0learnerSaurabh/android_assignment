@@ -81,7 +81,58 @@ public class MainActivity extends AppCompatActivity {
         addToChat(response,Message.SENT_BY_BOT);
     }
 
+    void callAPI(String question){
+        //okhttp
+        messageList.add(new Message("Typing... ",Message.SENT_BY_BOT));
 
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("model","text-davinci-003");
+            jsonBody.put("prompt",question);
+            jsonBody.put("max_tokens",4000);
+            jsonBody.put("temperature",0);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        RequestBody body = RequestBody.create(jsonBody.toString(),JSON);
+        Request.Builder builder = new Request.Builder();
+        builder.url("https://api.openai.com/v1/completions");
+        builder.header("Authorization", "Bearer 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");
+        builder.post(body);
+        Request request = builder
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                addResponse("Failed to load response due to "+e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if(response.isSuccessful()){
+                    JSONObject  jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(response.body().string());
+                        JSONArray jsonArray = jsonObject.getJSONArray("choices");
+                        String result = jsonArray.getJSONObject(0).getString("text");
+                        addResponse(result.trim());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }else{
+                    addResponse("Failed to load response due to "+response.body().toString());
+                }
+            }
+        });
+
+
+
+
+
+    }
 
 }
 
