@@ -1,1 +1,1 @@
-this app is real time chatting application made by java and android studio
+
